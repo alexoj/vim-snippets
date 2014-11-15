@@ -1,0 +1,118 @@
+snippet cl
+	class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
+	public:
+		$0(${1});
+		~$0();
+
+	private:
+		${3}
+	};
+snippet acl
+	class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
+	public:
+		virtual ~$0() {}
+		
+		${1}
+	
+	protected:
+		$0() {}
+
+	private:
+		
+	};
+snippet fori
+	for (int ${4:i} = 0; $4 < ${1:count}; $4${3:++}) {
+		${2}
+	}
+snippet ld
+	[${1}](${2}){${3}}
+snippet lld
+	[${1}](${2})
+	{
+		${3}
+	}
+snippet WinMain
+	int CALLBACK WinMain(HINSTANCE hInstance,
+			     HINSTANCE hPrevInstance,
+			     LPSTR lpCmdLine, 
+			     int nCmdShow
+			    )
+	{
+		${1}
+	}
+snippet main
+	int main(int argc, char* argv[])
+	{
+		${1}
+	}
+snippet ns
+	namespace ${2:`vim_snippets#Foldername('$1', 'name')`} {
+
+	${1}
+
+	} // $2
+snippet ig
+	#ifndef ${2:_`toupper(vim_snippets#Foldername('$1', 'name'))`_`toupper(vim_snippets#Filename('$1', 'name'))`_HH}
+	#define $2
+	
+	${1}
+	
+	#endif // $2
+snippet usi
+	using namespace ${1:std};
+snippet cddef
+	${0:`vim_snippets#Filename('$1', 'name')`}::$0(${1})
+	{
+		
+	}
+	
+	$0::~$0()
+	{
+		
+	}${2}
+snippet asiocoro
+	template <typename AsyncStream, typename ReadWriteHandler>
+	struct ${1:`vim_snippets#Filename('$1', 'name')`} {
+		AsyncStream& stream;
+		ReadWriteHandler handler;
+		
+		size_t total_transferred;
+		boost::asio::coroutine coro;
+		
+		${2}
+		
+		$1(AsyncStream& stream, ${3}ReadWriteHandler handler)
+			: stream(stream),
+			handler(handler),
+			total_transferred(0)
+		{
+			${4}
+		}
+		
+		void operator()(
+			boost::system::error_code ec 
+				= boost::system::error_code(),
+			const size_t bytes_transferred = 0);
+	};
+	
+	template <typename AsyncStream, typename ReadWriteHandler>
+	void $1<AsyncStream, ReadWriteHandler>::operator()(
+		boost::system::error_code ec,
+		const size_t bytes_transferred)
+	{
+		total_transferred += bytes_transferred;
+		
+		if (!ec) reenter(coro) {
+			${5}
+			
+			handler(ec, total_transferred);
+		} else {
+			handler(ec, total_transferred);
+		}
+	}
+snippet msgloop
+	MSG msg;
+	while (GetMessage(&msg, 0, 0, 0) > 0) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}

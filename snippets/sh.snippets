@@ -1,0 +1,12 @@
+snippet pushd
+	pushd ${1} > /dev/null
+
+	${2}
+
+	popd > /dev/null # $1
+snippet if
+	if [ "x${1}" == "x${2}" ]; then
+
+		${3}
+
+	fi

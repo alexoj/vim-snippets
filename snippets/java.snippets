@@ -1,0 +1,17 @@
+snippet main
+	public static void main(String[] args)
+	{
+		${1}
+	}
+snippet cl
+	package ${3:`vim_snippets#Foldername('$1', 'name')`};
+	
+	public class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
+		${1}
+	}
+snippet en
+	package ${3:`vim_snippets#Foldername('$1', 'name')`};
+	
+	public enum ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
+		${1}
+	}
