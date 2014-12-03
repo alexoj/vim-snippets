@@ -5,7 +5,7 @@ snippet main
 	}
 snippet cl
 	package ${3:`vim_snippets#Foldername('$1', 'name')`};
-	
+
 	public class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
 		${1}
 	}
@@ -33,12 +33,12 @@ snippet junit
 		public void setUp() {
 			PopulateDatabase.main(null);
 		}
-		
+
 		@After
 		public void tearDown() {
-			
+
 		}
-		
+
 		@Test
 		public void testMethod() {
 			${1}
@@ -48,9 +48,9 @@ snippet dom
 	package ${3:`vim_snippets#Foldername('$1', 'name')`};
 
 	import javax.persistence.Entity;
-	
+
 	@Entity
-	public class ${0:`vim_snippets#Filename('$1', 'name')`} 
+	public class ${0:`vim_snippets#Filename('$1', 'name')`}
 	extends ${2:DomainEntity} {
 		${1}
 	}
@@ -72,20 +72,20 @@ snippet controller
 		@RequestMapping("/index")
 		public ModelAndView index() {
 			ModelAndView result;
-					
+
 			result = new ModelAndView("$2/index");
 			return result;
 		}
-		
+
 		@RequestMapping("/new")
 		public ModelAndView new_() {
 			return newForm(new $3(), null, null);
 		}
-		
-		public ModelAndView newForm($3 ${4:`tolower(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""))`}, 
+
+		public ModelAndView newForm($3 ${4:`tolower(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""))`},
 				BindingResult binding,
 				String message) {
-			
+
 			ModelAndView result = new ModelAndView("$2/new");
 			result.addObject("$4", $4);
 			if (binding != null) {
@@ -94,14 +94,14 @@ snippet controller
 			if (message != null) {
 				result.addObject("message", message);
 			}
-			
+
 			return result;
 		}
-		
+
 		@RequestMapping(value="/create", method=RequestMethod.POST)
-		public ModelAndView create(@Valid $3 $4, 
+		public ModelAndView create(@Valid $3 $4,
 				BindingResult binding) {
-			
+
 			ModelAndView result;
 			if (binding.hasErrors()) {
 				// go back to new form
@@ -110,30 +110,30 @@ snippet controller
 				try {
 					// commit to db
 					service.create($4);
-					
+
 					result = new ModelAndView("redirect:index.do");
 				} catch(Throwable oops) {
-					result = newForm($4, 
-							binding, 
+					result = newForm($4,
+							binding,
 							"$4.commit.error");
 				}
 			}
-			
+
 			return result;
 		}
-		
+
 		@RequestMapping("/edit")
 		public ModelAndView edit(@RequestParam(required = true) int id) {
 			$3 $4 = service.findOne(id);
 			Assert.notNull($4);
-			
+
 			return editForm($4, null, null);
 		}
-		
-		public ModelAndView editForm($3 $4, 
+
+		public ModelAndView editForm($3 $4,
 				BindingResult binding,
 				String message) {
-			
+
 			ModelAndView result = new ModelAndView("$2/edit");
 			result.addObject("$4", $4);
 			if (binding != null) {
@@ -142,14 +142,14 @@ snippet controller
 			if (message != null) {
 				result.addObject("message", message);
 			}
-			
+
 			return result;
 		}
-		
+
 		@RequestMapping(value="/update", method=RequestMethod.POST)
-		public ModelAndView update(@Valid $3 $4, 
+		public ModelAndView update(@Valid $3 $4,
 				BindingResult binding) {
-			
+
 			ModelAndView result;
 			if (binding.hasErrors()) {
 				// go back to edit form
@@ -161,25 +161,29 @@ snippet controller
 
 					result = new ModelAndView("redirect:index.do");
 				} catch(Throwable oops) {
-					result = editForm($4, 
-							binding, 
+					result = editForm($4,
+							binding,
 							"$4.commit.error");
 				}
 			}
-			
+
 			return result;
 		}
-		
+
 		@RequestMapping(value="/destroy", method=RequestMethod.POST)
 		public ModelAndView destroy(@RequestParam(required = true) int id) {
 			ModelAndView result;
-					
-			service.destroy(id);
-			
+
+			try {
+				service.destroy(id);
+			} catch(EmptyResultDataAccessException oops) {
+                                // well, if it's already gone, it's gone.
+                        }
+
 			result = new ModelAndView("redirect:index.do");
 			return result;
 		}
-		
+
 	}
 snippet repository
 	package repositories;
@@ -191,10 +195,10 @@ snippet repository
 
 	@Repository
 	public interface ${0:`vim_snippets#Filename('$1', 'name')`} extends JpaRepository<${1:`substitute(vim_snippets#Filename('$1', 'name'), "Repository", "", "")`}, Integer> {
-	
+
 	}
 snippet service
-	package services; 
+	package services;
 
 	import java.util.Collection;
 
@@ -208,24 +212,24 @@ snippet service
 	public class ${0:`vim_snippets#Filename('$1', 'name')`} {
 		@Autowired
 		${101:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "Repository", "")`} repository;
-		
+
 		public ${102:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "", "")`} findOne(int id) {
 			return repository.findOne(id);
 		}
-		
+
 		public Collection<$101> findAll() {
 			return repository.findAll();
 		}
-		
+
 		public void destroy(int id) {
 			repository.delete(id);
 		}
-		
+
 		${1}
 	}
 snippet en
 	package ${3:`vim_snippets#Foldername('$1', 'name')`};
-	
+
 	public enum ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
 		${1}
 	}
