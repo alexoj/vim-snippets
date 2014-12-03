@@ -9,6 +9,220 @@ snippet cl
 	public class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
 		${1}
 	}
+snippet junit
+	import org.junit.After;
+	import org.junit.Before;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.util.Assert;
+	import org.springframework.test.context.ContextConfiguration;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+	import utilities.PopulateDatabase;
+
+	@RunWith(SpringJUnit4ClassRunner.class)
+	@ContextConfiguration(
+		locations = {
+				"classpath:spring/datasource.xml",
+				"classpath:spring/config/packages.xml"
+	})
+
+	@Transactional
+	public class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
+		@Before
+		public void setUp() {
+			PopulateDatabase.main(null);
+		}
+		
+		@After
+		public void tearDown() {
+			
+		}
+		
+		@Test
+		public void testMethod() {
+			${1}
+		}
+	}
+snippet dom
+	package ${3:`vim_snippets#Foldername('$1', 'name')`};
+
+	import javax.persistence.Entity;
+	
+	@Entity
+	public class ${0:`vim_snippets#Filename('$1', 'name')`} 
+	extends ${2:DomainEntity} {
+		${1}
+	}
+snippet controller
+	package controllers;
+
+	import org.springframework.stereotype.Controller;
+	import org.springframework.web.bind.annotation.RequestMapping;
+	import org.springframework.web.servlet.ModelAndView;
+
+	@Controller
+	@RequestMapping("/${2:`tolower(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""))`}")
+	public class ${3:`substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", "")`}Controller extends AbstractController {
+
+		public $3Controller() {
+			super();
+		}
+		${1}
+		@RequestMapping("/index")
+		public ModelAndView index() {
+			ModelAndView result;
+					
+			result = new ModelAndView("$2/index");
+			return result;
+		}
+		
+		@RequestMapping("/new")
+		public ModelAndView new_() {
+			return newForm(new $3(), null, null);
+		}
+		
+		public ModelAndView newForm($3 ${4:`tolower(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""))`}, 
+				BindingResult binding,
+				String message) {
+			
+			ModelAndView result = new ModelAndView("$2/new");
+			result.addObject("$4", $4);
+			if (binding != null) {
+				result.addObject("result", binding);
+			}
+			if (message != null) {
+				result.addObject("message", message);
+			}
+			
+			return result;
+		}
+		
+		@RequestMapping(value="/create", method=RequestMethod.POST)
+		public ModelAndView create(@Valid $3 $4, 
+				BindingResult binding) {
+			
+			ModelAndView result;
+			if (binding.hasErrors()) {
+				// go back to new form
+				result = newForm($4, binding, null);
+			} else {
+				try {
+					// commit to db
+					service.create($4);
+					
+					result = new ModelAndView("redirect:index.do");
+				} catch(Throwable oops) {
+					result = newForm($4, 
+							binding, 
+							"$4.commit.error");
+				}
+			}
+			
+			return result;
+		}
+		
+		@RequestMapping("/edit")
+		public ModelAndView edit(@RequestParam(required = true) int id) {
+			$3 $4 = service.findOne(id);
+			Assert.notNull($4);
+			
+			return editForm($4, null, null);
+		}
+		
+		public ModelAndView editForm($3 $4, 
+				BindingResult binding,
+				String message) {
+			
+			ModelAndView result = new ModelAndView("$2/edit");
+			result.addObject("$4", $4);
+			if (binding != null) {
+				result.addObject("result", binding);
+			}
+			if (message != null) {
+				result.addObject("message", message);
+			}
+			
+			return result;
+		}
+		
+		@RequestMapping(value="/update", method=RequestMethod.POST)
+		public ModelAndView update(@Valid $3 $4, 
+				BindingResult binding) {
+			
+			ModelAndView result;
+			if (binding.hasErrors()) {
+				// go back to edit form
+				result = editForm($4, binding, null);
+			} else {
+				try {
+					// commit to db
+					service.update($4);
+
+					result = new ModelAndView("redirect:index.do");
+				} catch(Throwable oops) {
+					result = editForm($4, 
+							binding, 
+							"$4.commit.error");
+				}
+			}
+			
+			return result;
+		}
+		
+		@RequestMapping(value="/destroy", method=RequestMethod.POST)
+		public ModelAndView destroy(@RequestParam(required = true) int id) {
+			ModelAndView result;
+					
+			service.destroy(id);
+			
+			result = new ModelAndView("redirect:index.do");
+			return result;
+		}
+		
+	}
+snippet repository
+	package repositories;
+
+	import java.util.Collection;
+
+	import org.springframework.data.jpa.repository.JpaRepository;
+	import org.springframework.stereotype.Repository;
+
+	@Repository
+	public interface ${0:`vim_snippets#Filename('$1', 'name')`} extends JpaRepository<${1:`substitute(vim_snippets#Filename('$1', 'name'), "Repository", "", "")`}, Integer> {
+	
+	}
+snippet service
+	package services; 
+
+	import java.util.Collection;
+
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.stereotype.Service;
+
+	import repositories.$101;
+
+	@Service
+	@Transactional
+	public class ${0:`vim_snippets#Filename('$1', 'name')`} {
+		@Autowired
+		${101:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "Repository", "")`} repository;
+		
+		public ${102:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "", "")`} findOne(int id) {
+			return repository.findOne(id);
+		}
+		
+		public Collection<$101> findAll() {
+			return repository.findAll();
+		}
+		
+		public void destroy(int id) {
+			repository.delete(id);
+		}
+		
+		${1}
+	}
 snippet en
 	package ${3:`vim_snippets#Foldername('$1', 'name')`};
 	
