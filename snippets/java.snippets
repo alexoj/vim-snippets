@@ -30,17 +30,20 @@ snippet junit
 	@Transactional
 	public class ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
 		@Before
-		public void setUp() {
+		public void setUp()
+		{
 			PopulateDatabase.main(null);
 		}
 
 		@After
-		public void tearDown() {
+		public void tearDown()
+		{
 
 		}
 
 		@Test
-		public void testMethod() {
+		public void testMethod()
+		{
 			${1}
 		}
 	}
@@ -54,42 +57,81 @@ snippet dom
 	extends ${2:DomainEntity} {
 		${1}
 	}
-snippet controller
+snippet cont
 	package controllers;
 
+	import java.util.Collection;
 	import org.springframework.stereotype.Controller;
 	import org.springframework.web.bind.annotation.RequestMapping;
 	import org.springframework.web.servlet.ModelAndView;
+	import org.springframework.util.Assert;
 
 	@Controller
-	@RequestMapping("/${2:`tolower(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""))`}")
+	@RequestMapping("/${2:`substitute(substitute(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""), ".*", "\\l\\0s", ""), "\\u", "_\\l\\0", "g")`}")
 	public class ${3:`substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", "")`}Controller extends AbstractController {
+		@Autowired
+		private $3Service service;
 
-		public $3Controller() {
+		public $3Controller()
+		{
 			super();
 		}
-		${1}
+
 		@RequestMapping("/index")
-		public ModelAndView index() {
+		public ModelAndView index()
+		{
 			ModelAndView result;
 
 			result = new ModelAndView("$2/index");
+
+			Collection<$3> $4s = service.findAll();
+			Assert.notNull($4s);
+			result.addObject("$4s", $4s);
+
+			return result;
+		}
+
+		@RequestMapping("/view")
+		public ModelAndView view(@RequestParam(required=true) int id)
+		{
+			ModelAndView result;
+
+			result = new ModelAndView("$2/view");
+
+			$3 $4 = service.findOne(id);
+			if ($4 == null) {
+				return new ModelAndView("redirect:index.do");
+			}
+			result.addObject("$4", $4);
+
 			return result;
 		}
 
 		@RequestMapping("/new")
-		public ModelAndView new_() {
+		public ModelAndView new_()
+		{
 			return newForm(new $3(), null, null);
 		}
 
-		public ModelAndView newForm($3 ${4:`tolower(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""))`},
+		public ModelAndView newForm($3 ${4:`substitute(substitute(vim_snippets#Filename('$1', 'name'), "Controller", "", ""), ".*", "\\l\\0", "")`},
 				BindingResult binding,
-				String message) {
-
+				String message)
+		{
 			ModelAndView result = new ModelAndView("$2/new");
 			result.addObject("$4", $4);
 			if (binding != null) {
 				result.addObject("result", binding);
+				if (binding.getGlobalError() != null) {
+					if (message == null) {
+						message = binding
+							.getGlobalError()
+							.getDefaultMessage();
+					} else {
+						message = message + "  " + binding
+							.getGlobalError()
+							.getDefaultMessage();
+					}
+				}
 			}
 			if (message != null) {
 				result.addObject("message", message);
@@ -99,9 +141,10 @@ snippet controller
 		}
 
 		@RequestMapping(value="/create", method=RequestMethod.POST)
-		public ModelAndView create(@Valid $3 $4,
-				BindingResult binding) {
-
+		public ModelAndView create(
+				@ModelAttribute("$4") @Valid $3 $4,
+				BindingResult binding)
+		{
 			ModelAndView result;
 			if (binding.hasErrors()) {
 				// go back to new form
@@ -115,7 +158,7 @@ snippet controller
 				} catch(Throwable oops) {
 					result = newForm($4,
 							binding,
-							"$4.commit.error");
+							"misc.commit.error");
 				}
 			}
 
@@ -123,21 +166,35 @@ snippet controller
 		}
 
 		@RequestMapping("/edit")
-		public ModelAndView edit(@RequestParam(required = true) int id) {
+		public ModelAndView edit(@RequestParam(required = true) int id)
+		{
 			$3 $4 = service.findOne(id);
-			Assert.notNull($4);
+			if ($4 == null) {
+				return new ModelAndView("redirect:index.do");
+			}
 
 			return editForm($4, null, null);
 		}
 
 		public ModelAndView editForm($3 $4,
 				BindingResult binding,
-				String message) {
-
+				String message)
+		{
 			ModelAndView result = new ModelAndView("$2/edit");
 			result.addObject("$4", $4);
 			if (binding != null) {
 				result.addObject("result", binding);
+				if (binding.getGlobalError() != null) {
+					if (message == null) {
+						message = binding
+							.getGlobalError()
+							.getDefaultMessage();
+					} else {
+						message = message + "  " + binding
+							.getGlobalError()
+							.getDefaultMessage();
+					}
+				}
 			}
 			if (message != null) {
 				result.addObject("message", message);
@@ -147,9 +204,10 @@ snippet controller
 		}
 
 		@RequestMapping(value="/update", method=RequestMethod.POST)
-		public ModelAndView update(@Valid $3 $4,
-				BindingResult binding) {
-
+		public ModelAndView update(
+				@ModelAttribute("$4") @Valid $3 $4,
+				BindingResult binding)
+		{
 			ModelAndView result;
 			if (binding.hasErrors()) {
 				// go back to edit form
@@ -163,7 +221,7 @@ snippet controller
 				} catch(Throwable oops) {
 					result = editForm($4,
 							binding,
-							"$4.commit.error");
+							"misc.commit.error");
 				}
 			}
 
@@ -171,40 +229,46 @@ snippet controller
 		}
 
 		@RequestMapping(value="/destroy", method=RequestMethod.POST)
-		public ModelAndView destroy(@RequestParam(required = true) int id) {
+		public ModelAndView destroy(@RequestParam(required = true) int id)
+		{
 			ModelAndView result;
 
 			try {
-				service.destroy(id);
+				$3 $4 = service.findOne(id);
+				if ($4 != null) service.destroy($4);
 			} catch(EmptyResultDataAccessException oops) {
-                                // well, if it's already gone, it's gone.
-                        }
+				// well, if it's already gone, it's gone.
+			}
 
 			result = new ModelAndView("redirect:index.do");
 			return result;
 		}
 
 	}
-snippet repository
+snippet repo
 	package repositories;
-
-	import java.util.Collection;
 
 	import org.springframework.data.jpa.repository.JpaRepository;
 	import org.springframework.stereotype.Repository;
+
+	import domain.$1;
 
 	@Repository
 	public interface ${0:`vim_snippets#Filename('$1', 'name')`} extends JpaRepository<${1:`substitute(vim_snippets#Filename('$1', 'name'), "Repository", "", "")`}, Integer> {
 
 	}
-snippet service
+snippet serv
 	package services;
 
 	import java.util.Collection;
 
+	import javax.transaction.Transactional;
+
 	import org.springframework.beans.factory.annotation.Autowired;
 	import org.springframework.stereotype.Service;
+	import org.springframework.util.Assert;
 
+	import domain.$102;
 	import repositories.$101;
 
 	@Service
@@ -213,19 +277,32 @@ snippet service
 		@Autowired
 		${101:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "Repository", "")`} repository;
 
-		public ${102:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "", "")`} findOne(int id) {
+		public ${102:`substitute(vim_snippets#Filename('$1', 'name'), "Service", "", "")`} findOne(int id)
+		{
 			return repository.findOne(id);
 		}
 
-		public Collection<$101> findAll() {
+		public Collection<$102> findAll()
+		{
 			return repository.findAll();
 		}
 
-		public void destroy(int id) {
-			repository.delete(id);
+		public $102 create($102 ${103:`substitute(substitute(vim_snippets#Filename('$1', 'name'), "Service", "", ""), ".*", "\\l\\0", "")`})
+		{
+			Assert.isTrue($103.getId() == 0);
+			return repository.save($103);
 		}
 
-		${1}
+		public $102 update($102 $103)
+		{
+			Assert.isTrue($103.getId() != 0);
+			return repository.save($103);
+		}
+
+		public void destroy($102 $103)
+		{
+			repository.delete($103.getId());
+		}${1}
 	}
 snippet en
 	package ${3:`vim_snippets#Foldername('$1', 'name')`};
@@ -233,3 +310,6 @@ snippet en
 	public enum ${0:`vim_snippets#Filename('$1', 'name')`} ${2}{
 		${1}
 	}
+snippet dateannot
+	@DateTimeFormat(pattern = "dd/MM/yyyy")
+	@Temporal(TemporalType.DATE)
